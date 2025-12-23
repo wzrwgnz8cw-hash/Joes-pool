@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Joe — Custom Pool Designer</title>
+  <meta name="description" content="Joe designs modern, resort-style pools with clean lines, smart features, and timeless materials. Serving your area with design-first builds." />
+  <style>
+    :root{
+      --bg: #05070b;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --faint: rgba(255,255,255,.45);
+      --aqua: #49e6ff;
+      --mint: #49ffc8;
+      --gold: #ffd66b;
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --radius: 22px;
+      --radius2: 16px;
+      --max: 1140px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1200px 900px at 20% 10%, rgba(73,230,255,.22), transparent 55%),
+        radial-gradient(900px 700px at 85% 25%, rgba(73,255,200,.16), transparent 55%),
+        radial-gradient(800px 600px at 60% 90%, rgba(255,214,107,.10), transparent 60%),
+        linear-gradient(180deg, #05070b 0%, #060a12 45%, #04060a 100%);
+      overflow-x:hidden;
+    }
+
+    /* subtle animated grid */
+    .grid{
+      position:fixed; inset:0;
+      pointer-events:none;
+      opacity:.09;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,.12) 1px, transparent 1px);
+      background-size: 70px 70px;
+      mask-image: radial-gradient(closest-side at 50% 35%, black 35%, transparent 70%);
+      animation: drift 18s linear infinite;
+    }
+    @keyframes drift{
+      from{transform:translateY(0)}
+      to{transform:translateY(70px)}
+    }
+
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width:var(--max); margin:0 auto; padding:0 20px}
+    .nav{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(12px);
+      background: rgba(5,7,11,.55);
+      border-bottom: 1px solid rgba(255,255,255,.09);
+    }
+    .nav-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0;
+      gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      letter-spacing:.2px;
+    }
+    .mark{
+      width:42px; height:42px; border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, var(--aqua), transparent 60%),
+                  radial-gradient(circle at 70% 70%, var(--mint), transparent 60%),
+                  rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .mark:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 120deg, rgba(73,230,255,.0), rgba(73,230,255,.35), rgba(73,255,200,.0));
+      animation: spin 5s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .brand h1{
+      font-size:15px; margin:0; font-weight:700;
+      line-height:1.1;
+    }
+    .brand small{display:block; color:var(--muted); font-weight:550; margin-top:2px}
+    .links{
+      display:flex; align-items:center; gap:18px;
+      color:var(--muted);
+      font-weight:600;
+      font-size:14px;
+    }
+    .links a{opacity:.9}
+    .links a:hover{opacity:1; color:var(--text)}
+    .cta{
+      display:flex; gap:10px; align-items:center;
+    }
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding:11px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:700;
+      font-size:14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20)}
+    .btn.primary{
+      border-color: rgba(73,230,255,.35);
+      background: linear-gradient(90deg, rgba(73,230,255,.18), rgba(73,255,200,.14));
+    }
+    .btn .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--aqua);
+      box-shadow: 0 0 0 4px rgba(73,230,255,.15);
+    }
+
+    /* HERO */
+    .hero{
+      padding: 72px 0 36px;
+      position:relative;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+    .headline{
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .headline:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(circle at 40% 30%, rgba(73,230,255,.22), transparent 55%),
+        radial-gradient(circle at 60% 70%, rgba(73,255,200,.16), transparent 60%);
+      filter: blur(1px);
+      transform: rotate(-8deg);
+    }
+    .headline > *{position:relative}
+    .kicker{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-weight:650;
+      font-size:13px;
+    }
+    .kicker .spark{
+      width:10px; height:10px; border-radius:999px;
+      background: linear-gradient(180deg, var(--aqua), var(--mint));
+      box-shadow: 0 0 0 5px rgba(73,230,255,.12);
+    }
+    .headline h2{
+      margin:14px 0 10px;
+      font-size: clamp(34px, 4.2vw, 54px);
+      line-height:1.03;
+      letter-spacing:-.7px;
+    }
+    .headline p{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height:1.65;
+      max-width: 52ch;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      margin-top:18px;
+    }
+    .stat{
+      padding: 14px 14px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+    .stat b{display:block; font-size:18px}
+    .stat span{color: var(--faint); font-weight:650; font-size:12px}
+
+    .showcase{
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      min-height: 420px;
+    }
+    .water{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(900px 500px at 40% 25%, rgba(73,230,255,.35), transparent 60%),
+        radial-gradient(700px 500px at 80% 65%, rgba(73,255,200,.25), transparent 60%),
+        linear-gradient(140deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+    .water:before{
+      content:"";
+      position:absolute; inset:-20%;
+      background:
+        repeating-radial-gradient(circle at 30% 30%, rgba(255,255,255,.10) 0 2px, transparent 2px 18px),
+        repeating-radial-gradient(circle at 70% 70%, rgba(255,255,255,.08) 0 2px, transparent 2px 22px);
+      opacity:.35;
+      filter: blur(0.4px);
+      animation: ripple 9s ease-in-out infinite;
+    }
+    @keyframes ripple{
+      0%,100%{transform:translate(0,0) scale(1)}
+      50%{transform:translate(18px,-12px) scale(1.05)}
+    }
+    .mock{
+      position:absolute; inset:22px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55)),
+        url("https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
+      filter: saturate(1.1) contrast(1.05);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.07);
+    }
+    .badge{
+      position:absolute; left:22px; bottom:22px; right:22px;
+      display:flex; justify-content:space-between; align-items:flex-end;
+      gap:14px;
+      padding:16px 16px;
+      border-radius: 18px;
+      background: rgba(5,7,11,.70);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+    }
+    .badge h3{margin:0; font-size:16px}
+    .badge p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.4}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .pill svg{opacity:.9}
+
+    /* SECTIONS */
+    section{padding: 34px 0}
+    .section-title{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .section-title h2{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: -.2px;
+    }
+    .section-title p{
+      margin:0;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 14px;
+      max-width: 52ch;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 14px;
+    }
+    .card{
+      padding: 18px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 14px 40px rgba(0,0,0,.22);
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-60%;
+      background: radial-gradient(circle at 40% 40%, rgba(73,230,255,.16), transparent 55%);
+      transform: rotate(10deg);
+      opacity:.7;
+    }
+    .card > *{position:relative}
+    .icon{
+      width:42px; height:42px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom: 12px;
+    }
+    .card h3{margin:0 0 8px; font-size:16px}
+    .card p{margin:0; color:var(--muted); line-height:1.6; font-size:14px}
+
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .steps{
+      display:grid;
+      gap: 12px;
+    }
+    .step{
+      display:flex; gap:12px; align-items:flex-start;
+      padding: 16px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+    .num{
+      flex: 0 0 auto;
+      width:34px; height:34px;
+      border-radius: 12px;
+      display:grid; place-items:center;
+      font-weight:900;
+      background: linear-gradient(180deg, rgba(73,230,255,.22), rgba(73,255,200,.14));
+      border: 1px solid rgba(73,230,255,.28);
+    }
+    .step b{display:block; margin-bottom:4px}
+    .step span{color:var(--muted); font-size:14px; line-height:1.55}
+
+    .gallery{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+    .ph{
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      min-height: 180px;
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 14px 40px rgba(0,0,0,.22);
+    }
+    .ph img{
+      width:100%; height:100%; object-fit:cover; display:block;
+      filter: saturate(1.05) contrast(1.05);
+      transform: scale(1.02);
+    }
+    .ph:after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.55));
+      opacity:.85;
+    }
+    .ph .cap{
+      position:absolute; left:14px; bottom:12px; right:14px;
+      z-index:2;
+      color: rgba(255,255,255,.92);
+      font-weight:800;
+      font-size:13px;
+      letter-spacing:.1px;
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+    }
+    .cap em{font-style:normal; color: rgba(255,255,255,.70); font-weight:700}
+    .span-7{grid-column: span 7}
+    .span-5{grid-column: span 5}
+    .span-4{grid-column: span 4}
+    .span-8{grid-column: span 8}
+
+    .quote{
+      padding: 18px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 14px 40px rgba(0,0,0,.22);
+    }
+    .quote p{margin:0 0 10px; color:var(--muted); line-height:1.65}
+    .quote b{display:block}
+    .quote span{color:var(--faint); font-weight:650; font-size:13px}
+
+    .contact{
+      display:grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .panel{
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      box-shadow: var(--shadow);
+    }
+    label{display:block; font-weight:700; font-size:13px; color:var(--muted); margin: 12px 0 7px}
+    input, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      outline:none;
+      font: inherit;
+    }
+    textarea{min-height: 120px; resize: vertical}
+    input:focus, textarea:focus{border-color: rgba(73,230,255,.35); box-shadow: 0 0 0 4px rgba(73,230,255,.12)}
+    .fine{
+      margin-top: 10px;
+      color: var(--faint);
+      font-size: 12px;
+      line-height:1.5;
+    }
+
+    footer{
+      padding: 26px 0 44px;
+      color: var(--faint);
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin-top: 22px;
+    }
+    footer .foot{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns: 1fr; }
+      .showcase{min-height: 360px}
+      .cards{grid-template-columns: 1fr; }
+      .two{grid-template-columns: 1fr; }
+      .contact{grid-template-columns: 1fr; }
+      .links{display:none}
+      .span-7,.span-5,.span-4,.span-8{grid-column: span 12}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid"></div>
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Joe Pool Design <small>Custom pools • spas • outdoor living</small></h1>
+        </div>
+      </div>
+
+      <nav class="links" aria-label="Primary">
+        <a href="#services">Services</a>
+        <a href="#process">Process</a>
+        <a href="#work">Work</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="cta">
+        <a class="btn" href="tel:+15551234567" title="Call Joe">
+          <span class="dot"></span> Call
+        </a>
+        <a class="btn primary" href="#contact">
+          Get a Free Concept
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="headline">
+          <div class="kicker"><span class="spark"></span> Design-first pools that feel like a private resort</div>
+          <h2>Turn your backyard into a place you never want to leave.</h2>
+          <p>
+            Joe designs modern, timeless pools with clean geometry, elevated finishes, and smart features—
+            built to match your home, your lifestyle, and your budget.
+          </p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn primary" href="#contact">Request a Design Consult</a>
+            <a class="btn" href="#work">View Recent Projects</a>
+          </div>
+
+          <div class="stats" aria-label="Highlights">
+            <div class="stat"><b>3D Concepts</b><span>See it before you build it</span></div>
+            <div class="stat"><b>Material Guidance</b><span>Tile • coping • plaster</span></div>
+            <div class="stat"><b>Build-Ready Plans</b><span>For builders & permits</span></div>
+          </div>
+        </div>
+
+        <div class="showcase" aria-label="Project preview">
+          <div class="water"></div>
+          <div class="mock" role="img" aria-label="Luxury pool photo"></div>
+          <div class="badge">
+            <div>
+              <h3>Signature Style</h3>
+              <p>Clean lines, warm stone, subtle lighting, and water that looks <em>impossibly</em> blue.</p>
+            </div>
+            <div class="pill" title="Average timeline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 7v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              2–6 weeks to final plan
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="services">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <h2>Services</h2>
+            <p>From a quick concept to a full build-ready design package—pick what fits your project.</p>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <div class="icon" aria-hidden="true">🏝️</div>
+            <h3>Custom Pool & Spa Design</h3>
+            <p>Modern shapes, tanning ledges, integrated spas, plunge pools, lap lanes, and timeless proportions.</p>
+          </div>
+          <div class="card">
+            <div class="icon" aria-hidden="true">💡</div>
+            <h3>Lighting & Water Features</h3>
+            <p>Sheet falls, bubblers, scuppers, fire bowls, and lighting plans that feel premium at night.</p>
+          </div>
+          <div class="card">
+            <div class="icon" aria-hidden="true">🧱</div>
+            <h3>Outdoor Living Layout</h3>
+            <p>Hardscape, seating, shade, outdoor kitchen zones, and flow that makes the space feel bigger.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <h2>How it works</h2>
+            <p>A clear, low-stress process that keeps decisions simple and the end result dialed-in.</p>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="panel">
+            <h3 style="margin:0 0 10px;">What you get</h3>
+            <p style="margin:0; color:var(--muted); line-height:1.65;">
+              A design that fits your space and your style—plus practical guidance so your builder can execute it cleanly.
+              You’ll choose materials with confidence and avoid expensive “oops” moments.
+            </p>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+              <span class="pill">3D views</span>
+              <span class="pill">Material palette</span>
+              <span class="pill">Equipment notes</span>
+              <span class="pill">Plan set options</span>
+            </div>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="num">1</div>
+              <div><b>Discovery</b><span>We talk goals, budget, style, and your yard’s constraints.</span></div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div><b>Concepts</b><span>You’ll see 1–2 strong directions with clear tradeoffs.</span></div>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <div><b>Refine</b><span>Dial in layout, steps/benches, spa, and feature placement.</span></div>
+            </div>
+            <div class="step">
+              <div class="num">4</div>
+              <div><b>Finalize</b><span>Finish selections and deliver a builder-ready package.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="work">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <h2>Recent work</h2>
+            <p>Swap these photos with Joe’s real projects when you’re ready.</p>
+          </div>
+        </div>
+
+        <div class="gallery" aria-label="Project gallery">
+          <div class="ph span-7">
+            <img alt="Modern pool with clean lines" src="https://images.unsplash.com/photo-1507034589631-9433cc6bc453?auto=format&fit=crop&w=1600&q=80">
+            <div class="cap">Modern Rectangle <em>stone coping + laminar look</em></div>
+          </div>
+          <div class="ph span-5">
+            <img alt="Pool at dusk with lights" src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=1600&q=80">
+            <div class="cap">Night Lighting <em>soft + resort vibe</em></div>
+          </div>
+          <div class="ph span-4">
+            <img alt="Minimal pool with seating" src="https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=1200&q=80">
+            <div class="cap">Courtyard Dip <em>tight footprint</em></div>
+          </div>
+          <div class="ph span-8">
+            <img alt="Backyard pool with landscaping" src="https://images.unsplash.com/photo-1505691723518-36a5ac3b2fc4?auto=format&fit=crop&w=1600&q=80">
+            <div class="cap">Family Friendly <em>bench seating + steps</em></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <h2>What clients say</h2>
+            <p>Quick, believable testimonials (replace with real ones later).</p>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="quote">
+            <p>“Joe took our chaotic ideas and turned them into a design that looks like it belongs with the house. The 3D views made decisions easy.”</p>
+            <b>Sarah M.</b><span>Backyard remodel</span>
+          </div>
+          <div class="quote">
+            <p>“We got a builder-ready plan and a finish palette we actually felt confident choosing. Saved us time—and probably money.”</p>
+            <b>Daniel R.</b><span>New build</span>
+          </div>
+          <div class="quote">
+            <p>“Every detail feels intentional. The lighting and water feature placement is perfect at night.”</p>
+            <b>Priya K.</b><span>Pool + spa</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <h2>Contact Joe</h2>
+            <p>Send a message—Joe will reply within 1 business day.</p>
+          </div>
+        </div>
+
+        <div class="contact">
+          <div class="panel">
+            <h3 style="margin:0 0 10px;">Design consult</h3>
+            <p style="margin:0; color:var(--muted); line-height:1.65;">
+              Share your yard dimensions (or a survey), inspiration photos, and your rough budget range.
+              Joe will recommend the best package for your goals.
+            </p>
+            <div style="margin-top:14px; display:grid; gap:10px;">
+              <div class="pill">📍 Serving: Your City + nearby areas</div>
+              <div class="pill">📞 Phone: (555) 123-4567</div>
+              <div class="pill">✉️ Email: joe@joepooldesign.com</div>
+            </div>
+            <p class="fine">
+              Tip: If you have a property survey PDF, attach it after you wire this form to email (or use a form tool like Formspree).
+            </p>
+          </div>
+
+          <div class="panel">
+            <form onsubmit="event.preventDefault(); alert('Thanks! This demo form doesn\\'t send yet. Hook it to Formspree / your email service.');">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label for="name">Name</label>
+                  <input id="name" name="name" placeholder="Your name" required />
+                </div>
+                <div>
+                  <label for="phone">Phone</label>
+                  <input id="phone" name="phone" placeholder="(555) 123-4567" />
+                </div>
+              </div>
+
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+              <label for="details">Project details</label>
+              <textarea id="details" name="details" placeholder="Tell Joe what you’re imagining: pool style, spa, features, timeline, budget range, etc." required></textarea>
+
+              <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                <button class="btn primary" type="submit">Send Message</button>
+                <a class="btn" href="#work">See the Gallery</a>
+              </div>
+
+              <p class="fine">By submitting, you agree to be contacted about your project. No spam.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap foot">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="mark" aria-hidden="true" style="width:34px;height:34px;border-radius:12px;"></div>
+          <div>
+            <b style="display:block;">Joe Pool Design</b>
+            <span style="color:var(--faint); font-weight:650; font-size:13px;">Custom pools • spas • outdoor living</span>
+          </div>
+        </div>
+        <div style="color:var(--faint); font-weight:650; font-size:13px;">
+          © <span id="year"></span> Joe Pool Design. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
